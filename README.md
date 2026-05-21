@@ -270,13 +270,13 @@ RangeViM is most sensitive to incoherent geometric feature perturbations.
 
 ## Pretrained Models
 
-All checkpoints are hosted on [Google Drive](https://drive.google.com/drive/folders/17zkW0KQPqzc87A2Ws30D25QHIVFqzpW5?usp=sharing).
+All checkpoints are hosted on Google Drive.
 
 | Train data | Test data | mIoU (%) | Download |
 |-----------|-----------|----------|----------|
-| SemanticKITTI train | SemanticKITTI val | 65.96 | [SemanticKITTI](https://drive.google.com/drive/folders/17zkW0KQPqzc87A2Ws30D25QHIVFqzpW5?usp=sharing) |
-| SemanticKITTI train+val | SemanticKITTI test | 67.8 | [SemanticKITTI](https://drive.google.com/drive/folders/17zkW0KQPqzc87A2Ws30D25QHIVFqzpW5?usp=sharing) |
-| nuScenes train | nuScenes val | 76.88 | [nuScenes](https://drive.google.com/drive/folders/17zkW0KQPqzc87A2Ws30D25QHIVFqzpW5?usp=sharing) |
+| SemanticKITTI train | SemanticKITTI val | 65.96 | <a href="https://drive.google.com/drive/u/2/folders/1xNBV3FXa9UiFl5ftUIRw6i0H9UDWcMt_" target="_blank" rel="noopener">SemanticKITTI</a> |
+| SemanticKITTI train+val | SemanticKITTI test | 67.8 | <a href="https://drive.google.com/drive/u/2/folders/1VcGBxC2HonEXHP8j8YX-SSLEZQvMQmbk" target="_blank" rel="noopener">SemanticKITTI</a> |
+| nuScenes train | nuScenes val | 76.88 | <a href="https://drive.google.com/drive/u/2/folders/1OuU6_o6ltRa6arTK6QdRxaSjsVG6tuXL" target="_blank" rel="noopener">nuScenes</a> |
 
 ---
 
