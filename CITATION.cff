@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as follows."
+type: conference
+title: "RangeViM: Full-Resolution Range-View LiDAR Segmentation with a Lightweight Hybrid Vision Mamba Backbone"
+authors:
+  - family-names: "Huynh-Cao"
+    given-names: "Tuan-Kiet"
+  - family-names: "Ly-Dinh"
+    given-names: "Minh-Man"
+  - family-names: "Nguyen"
+    given-names: "Ngoc-Thao"
+collection-title: "Procedia Computer Science"
+volume: null
+number: null
+pages: null
+year: 2026
+conference:
+  name: "International Conference on Knowledge-Based Systems (KES)"
+  location: null
+  date-start: null
+  date-end: null
+abstract: >-
+  RangeViM is a LiDAR semantic segmentation framework that processes range images
+  with TinyViM, a lightweight hybrid backbone pairing convolutional blocks (local
+  detail) with state-space blocks (long-range azimuthal context). This enables direct
+  full-frame inference on the complete 64x2048 range image without sliding-window
+  decomposition, preserving 360-degree scene context.
+keywords:
+  - LiDAR semantic segmentation
+  - range view
+  - vision Mamba
+  - autonomous driving
+license: Apache-2.0
+url: null
+repository-code: null
