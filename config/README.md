@@ -34,7 +34,7 @@ Original RangeViT (ViT-S + ConvStem + UpConv decoder + KPConv 3D refiner), based
 | File | Backbone | Decoder | Epochs | Batch | Resolution | Augmentation | Notes |
 |------|----------|---------|--------|-------|------------|-------------|-------|
 | `config_tinyvim_aug.yaml` | TinyViM-Base | FPN | 60 | 6 | 64x2048 full-frame | Yes | Main paper result (65.96% val mIoU) |
-| `config_tinyvim_noaug.yaml` | TinyViM-Base | FPN | 70 | 6 | 64x2048 full-frame | No | No-augmentation ablation |
+| `config_tinyvim_noaug.yaml` | TinyViM-Base | FPN | 60 | 6 | 64x2048 full-frame | No | No-augmentation ablation |
 | `config_tinyvim_trainval.yaml` | TinyViM-Base | FPN | 60 | 1 | 64x2048 full-frame | Yes | For test submission (train on 00-10) |
 
 ### Ablation studies (`ablation/`)
@@ -50,10 +50,6 @@ Original RangeViT (ViT-S + ConvStem + UpConv decoder + KPConv 3D refiner), based
 
 | File | Decoder | Notes |
 |------|---------|-------|
-| `config_fpn_gated.yaml` | FPN-Gated | Learnable weighted fusion of stage features |
-| `config_fpn_gated_detail.yaml` | FPN-Gated-Detail | Adds shallow detail reinjection branch |
-| `config_fpn_residual.yaml` | FPN-Residual | Cross-stage residual connection |
-| `config_fpn_cross_attn.yaml` | FPN-CrossAttn | Cross-attention gate instead of 1x1 conv gate |
 | `config_fpn_residual_cross_attn.yaml` | FPN-Residual-CrossAttn | Both residual + cross-attention |
 | `config_fuse_aux.yaml` | Fuse-Aux | Simple concatenation + refinement baseline |
 
@@ -85,6 +81,14 @@ Original RangeViT (ViT-S + ConvStem + UpConv decoder + KPConv 3D refiner), based
 | File | Backbone | Decoder | Epochs | Batch | Resolution | Notes |
 |------|----------|---------|--------|-------|------------|-------|
 | `config_nusc_tinyvim_full.yaml` | TinyViM-Base | FPN | 120 | 6 | 32x2048 full-frame | Main paper result (76.88% val mIoU) |
+
+---
+
+## Checkpoints
+
+Pre-trained model checkpoints are available on Google Drive:
+
+- [HCMUS-THESIS-RANGEVIM](https://drive.google.com/drive/folders/17zkW0KQPqzc87A2Ws30D25QHIVFqzpW5?usp=drive_link) — contains `nuscene/` and `SemanticKITTI/` subfolders
 
 ---
 

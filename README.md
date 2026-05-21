@@ -6,7 +6,7 @@ Tuan-Kiet Huynh-Cao, Minh-Man Ly-Dinh, Ngoc-Thao Nguyen
 Faculty of Information Technology, University of Science, VNU-HCM
 **KES 2026**
 
-[Paper](#) · [BibTeX](#citation) · [Google Drive (checkpoints)](#pretrained-models)
+[Paper](#) · [BibTeX](#citation) · [Google Drive (checkpoints)](https://drive.google.com/drive/folders/17zkW0KQPqzc87A2Ws30D25QHIVFqzpW5?usp=drive_link)
 
 ---
 
