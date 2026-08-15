@@ -6,18 +6,19 @@
 #SBATCH --cpus-per-task=16          # >= 2 * num_workers per GPU, plus headroom
 #SBATCH --mem=64G
 #SBATCH --time=48:00:00
-#SBATCH --partition=gpu             # TODO: your cluster's GPU partition
+#SBATCH --partition=batch
 #SBATCH --output=slurm_logs/%x-%j.out
 #SBATCH --error=slurm_logs/%x-%j.err
 
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# TODO: adjust these to your cluster before the first submit
+# Defaults for this cluster; override any of them from the environment, e.g.
+#   CONFIG=config/kitti/main/config_tinyvim_noaug.yaml sbatch scripts/train_kitti_slurm.sh
 # ---------------------------------------------------------------------------
 CONDA_ENV="${CONDA_ENV:-rangevim}"
-DATA_ROOT="${DATA_ROOT:-/path/to/SemanticKitti/dataset/sequences}"
-PRETRAINED="${PRETRAINED:-/path/to/tinyvim_base.pth}"   # TinyViM ImageNet weights
+DATA_ROOT="${DATA_ROOT:-/media02/nnthao10/dataset/SemanticKitti/data_odometry_velodyne/dataset/sequences}"
+PRETRAINED="${PRETRAINED:-/media02/nnthao10/pretrained/tinyvim_b.pth}"   # TinyViM ImageNet weights
 CONFIG="${CONFIG:-config/kitti/main/config_tinyvim_aug.yaml}"
 SAVE_PATH="${SAVE_PATH:-./logs/rangevim_kitti_${SLURM_JOB_ID:-local}}"
 # ---------------------------------------------------------------------------
@@ -25,6 +26,10 @@ SAVE_PATH="${SAVE_PATH:-./logs/rangevim_kitti_${SLURM_JOB_ID:-local}}"
 REPO_DIR="${REPO_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$REPO_DIR"
 mkdir -p slurm_logs "$SAVE_PATH"
+
+# Fail before the job burns allocation on a bad path.
+[[ -d "$DATA_ROOT" ]]  || { echo "ERROR: DATA_ROOT not a directory: $DATA_ROOT" >&2; exit 1; }
+[[ -f "$PRETRAINED" ]] || { echo "ERROR: PRETRAINED weights not found: $PRETRAINED" >&2; exit 1; }
 
 # --- environment -----------------------------------------------------------
 # No CUDA module is loaded on purpose. The spack modules top out at 11.8, while
@@ -67,6 +72,7 @@ srun --kill-on-bad-exit=1 torchrun \
     main.py "${CONFIG}" \
     --data_root "${DATA_ROOT}" \
     --save_path "${SAVE_PATH}" \
+    --pretrained_model "${PRETRAINED}" \
     --num_workers 4
 
 echo "done. checkpoints + logs in ${SAVE_PATH}"
