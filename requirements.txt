@@ -10,4 +10,7 @@ matplotlib==3.10.9
 ruamel.yaml
 numpy==2.2.6
 opencv-python==4.9.0.80
-nuscenes-devkit==1.1.11
+
+# nuscenes-devkit==1.1.11 conflicts with matplotlib==3.10.9 above (it requires
+# matplotlib<3.6.0) and is never imported by the training/eval code. See the
+# note in requirements-cu121-lock.txt.

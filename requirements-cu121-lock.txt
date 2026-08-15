@@ -21,7 +21,13 @@ matplotlib==3.10.9
 ruamel.yaml
 numpy==2.2.6
 opencv-python==4.9.0.80
-nuscenes-devkit==1.1.11
+
+# nuscenes-devkit is NOT installable alongside this pin set: 1.1.11 requires
+# matplotlib<3.6.0, which conflicts with matplotlib==3.10.9 above. It is also
+# never imported by the training/eval code -- the nuScenes dataset class reads a
+# pre-generated nuscenes_lidar_n_label_data_info.json. Install it in a separate
+# environment if you need to regenerate that JSON:
+#   pip install nuscenes-devkit==1.1.11   (pulls matplotlib<3.6, Shapely<2.0)
 
 # Install TinyViM selective scan separately so pip can use --no-build-isolation:
 # python -m pip install mamba-ssm==2.3.0 --no-build-isolation
