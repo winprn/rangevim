@@ -1,14 +1,18 @@
 # General config
 num_workers: 4
-id: "exp_kitti"
-save_path: "save_rangevim_aug"
+# Read at option.py:36 and gates utils/tools/utils.py:54. Must be top-level.
+# Without it init_distributed_mode() returns early, so every rank runs an
+# independent non-DDP training on GPU 0.
+distributed: true
+id: "exp_kitti_noaug_trainval"
+save_path: "save_rangevim_noaug_trainval"
 
 # MLflow config
 mlflow:
   enable: true
   tracking_uri: "file:./mlruns" # e.g. 'file:./mlruns' or an HTTP URL
   experiment_name: "rangevim"
-  run_name: "[train] rangevim_base_aug" # defaults to the CLI-provided id when null
+  run_name: "[trainval] rangevim_base_noaug" # defaults to the CLI-provided id when null
   nested: false
   log_checkpoints: false
   log_code_snapshot: false
@@ -19,7 +23,7 @@ data:
   n_classes: 20 # 19 + 1(ignored)
   data_root: "../dataset/SemanticKitti/data_odometry_velodyne/dataset/sequences"
   has_label: true
-  use_trainval: false # set to true if you want to train on train-val of SemanticKITTI.
+  use_trainval: true # train on train+val (seq 08 folded into training); val metrics are no longer held out
 
 
 # Train config
@@ -75,7 +79,8 @@ knn_cutoff: 1.0
 # Checkpoint model
 checkpoint: null
 
-# Range image-level augmentation (applied on GPU batch before forward pass)
+# Range image-level (pixel) augmentation, applied on the GPU batch before the
+# forward pass. Disabled here; point-level geometric aug below stays enabled.
 range_aug: false
 use_fp16: true
 # Data augmentation config
