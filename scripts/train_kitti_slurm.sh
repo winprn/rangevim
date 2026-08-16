@@ -37,6 +37,7 @@ mkdir -p slurm_logs "$SAVE_PATH"
 # The 12.1 toolkit lives inside the conda env; loading the 11.8 module here would
 # put the wrong nvcc/libs ahead of it on PATH and LD_LIBRARY_PATH.
 # Make `conda activate` usable from a non-interactive shell.
+source "/home/nnthao10/.zshrc"
 if [[ -n "${CONDA_EXE:-}" ]]; then
     source "$(dirname "$(dirname "$CONDA_EXE")")/etc/profile.d/conda.sh"
 else
