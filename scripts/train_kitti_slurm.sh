@@ -3,10 +3,11 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=4          # >= 2 * num_workers per GPU, plus headroom
-#SBATCH --mem=64G
+#SBATCH --cpus-per-task=12          # >= 2 * num_workers per GPU, plus headroom
+#SBATCH --mem=32G
 #SBATCH --time=48:00:00
 #SBATCH --partition=batch
+#SBATCH --nodelist=gpu01
 #SBATCH --output=slurm_logs/%x-%j.out
 #SBATCH --error=slurm_logs/%x-%j.err
 
@@ -19,7 +20,7 @@ set -euo pipefail
 CONDA_ENV="${CONDA_ENV:-rangevim}"
 DATA_ROOT="${DATA_ROOT:-/media02/nnthao10/dataset/SemanticKitti/data_odometry_velodyne/dataset/sequences}"
 PRETRAINED="${PRETRAINED:-/media02/nnthao10/pretrained/tinyvim_b.pth}"   # TinyViM ImageNet weights
-CONFIG="${CONFIG:-config/kitti/main/config_tinyvim_aug.yaml}"
+CONFIG="${CONFIG:-config/kitti/main/config_tinyvim_noaug.yaml}"
 SAVE_PATH="${SAVE_PATH:-./logs/rangevim_kitti_${SLURM_JOB_ID:-local}}"
 # ---------------------------------------------------------------------------
 
