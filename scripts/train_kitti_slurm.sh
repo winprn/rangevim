@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=16          # >= 2 * num_workers per GPU, plus headroom
+#SBATCH --cpus-per-task=4          # >= 2 * num_workers per GPU, plus headroom
 #SBATCH --mem=64G
 #SBATCH --time=48:00:00
 #SBATCH --partition=batch
