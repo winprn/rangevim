@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-08-18
+
+- Halved `training.batch_size` (6 -> 3) in
+  `config/kitti/main/config_tinyvim_noaug.yaml`. With `distributed: true` the
+  value is per-GPU, and 6 full 64x2048 frames per rank exhausted a 40GB A100
+  (OOM in the forward pass; AMP was already on via `use_fp16: true`).
+
+- Scaled `training.lr` 3e-4 -> 1.5e-4 to match the halved effective batch
+  (2 GPUs x 3 = 6, was 12).
+
+Files touched: `config/kitti/main/config_tinyvim_noaug.yaml`
+
+Follow-ups:
+- `train.py` has no gradient accumulation, so recovering the effective batch of
+  12 at this memory footprint would need one (accumulate K micro-batches and
+  wrap the non-final ones in `model.no_sync()`).
+- The warmup/LR schedule (`warmup_epochs: 6`, 60 epochs) was not retuned for the
+  new LR.
+
 ## 2026-08-16
 
 - Regenerated `config/kitti/main/config_tinyvim_noaug.yaml` as a clone of

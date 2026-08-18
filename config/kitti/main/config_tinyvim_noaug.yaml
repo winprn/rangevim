@@ -31,9 +31,9 @@ training:
   val_frequency: 1
   n_epochs: 60
   warmup_epochs: 6
-  batch_size: 6
+  batch_size: 3 # per-GPU under DDP; 6 OOM'd on a 40GB A100 at full 64x2048
   batch_size_val: 1
-  lr: 0.0003
+  lr: 0.00015 # linearly scaled for the halved effective batch (2 x 3 = 6)
   train_result_frequency: 100 # printing frequency of the train results
   loss:
     focal_loss:
