@@ -2,17 +2,22 @@
 
 ## 2026-08-18
 
-- Halved `training.batch_size` (6 -> 3) in
+- Reduced `training.batch_size` (6 -> 4) in
   `config/kitti/main/config_tinyvim_noaug.yaml`. With `distributed: true` the
   value is per-GPU, and 6 full 64x2048 frames per rank exhausted a 40GB A100
-  (OOM in the forward pass; AMP was already on via `use_fp16: true`).
+  (OOM in the forward pass; AMP was already on via `use_fp16: true`). A trial run
+  at 3 measured ~21GB, implying ~6GB/sample plus ~2-3GB fixed, so 4 (~27GB) fits
+  with headroom.
 
-- Scaled `training.lr` 3e-4 -> 1.5e-4 to match the halved effective batch
-  (2 GPUs x 3 = 6, was 12).
+- Scaled `training.lr` 3e-4 -> 2e-4 to match the reduced effective batch
+  (2 GPUs x 4 = 8, was 12).
 
 Files touched: `config/kitti/main/config_tinyvim_noaug.yaml`
 
 Follow-ups:
+- The ~21GB measurement is training-only; the first validation pass (full-frame,
+  `use_sliding_window: false`, plus kNN post-processing) had not run yet, so peak
+  memory at the epoch boundary is still unverified.
 - `train.py` has no gradient accumulation, so recovering the effective batch of
   12 at this memory footprint would need one (accumulate K micro-batches and
   wrap the non-final ones in `model.no_sync()`).
