@@ -12,9 +12,19 @@
 - Scaled `training.lr` 3e-4 -> 2e-4 to match the reduced effective batch
   (2 GPUs x 4 = 8, was 12).
 
+- Set `training.val_frequency` 1 -> 5 in the same config. With
+  `use_trainval: true` seq 08 is folded into training while the val loader still
+  evaluates on seq 08, so the metric is not held out and is not worth ~4070
+  full-frame forward passes (plus kNN post-processing) every epoch. `main.py:331`
+  saves `checkpoint.pth` independently of validation, and `--full` resumes from
+  that file, so nothing downstream depends on the skipped epochs.
+
 Files touched: `config/kitti/main/config_tinyvim_noaug.yaml`
 
 Follow-ups:
+- `best_miou_model.pth` now only updates on epochs where validation runs, and the
+  mIoU behind it is train-on-train. Use `--val_only` against a held-out split for
+  any number that goes in the thesis.
 - The ~21GB measurement is training-only; the first validation pass (full-frame,
   `use_sliding_window: false`, plus kNN post-processing) had not run yet, so peak
   memory at the epoch boundary is still unverified.

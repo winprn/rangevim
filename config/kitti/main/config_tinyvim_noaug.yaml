@@ -28,7 +28,8 @@ data:
 
 # Train config
 training:
-  val_frequency: 1
+  val_frequency: 5 # seq 08 is in the train set here (use_trainval), so val mIoU is
+                   # not held out; run it periodically as a sanity signal only
   n_epochs: 60
   warmup_epochs: 6
   batch_size: 4 # per-GPU under DDP; 6 OOM'd on a 40GB A100, 3 measured ~21GB
