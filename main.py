@@ -238,6 +238,22 @@ class Experiment(object):
                 if ('fp16_scaler' in checkpoint_data) and (checkpoint_data['fp16_scaler'] is not None):
                     self.trainer.fp16_scaler.load_state_dict(checkpoint_data['fp16_scaler'])
 
+                # Restore scheduler state or fast-forward if resuming training
+                if self.settings.val_only is False and hasattr(self.trainer, 'scheduler') and self.trainer.scheduler is not None:
+                    if ('scheduler' in checkpoint_data) and (checkpoint_data['scheduler'] is not None):
+                        print(f'==> Loading scheduler state')
+                        self.trainer.scheduler.load_state_dict(checkpoint_data['scheduler'])
+                    elif self.epoch_start > 0:
+                        steps_passed = self.epoch_start * len(self.trainer.train_loader)
+                        print(f'==> Fast-forwarding scheduler by {steps_passed} steps (epoch {self.epoch_start})')
+                        if hasattr(self.trainer.scheduler, 'fast_forward'):
+                            self.trainer.scheduler.fast_forward(steps_passed)
+                        else:
+                            for _ in range(steps_passed):
+                                self.trainer.scheduler.step()
+                    # Ensure optimizer parameter group LR matches checkpoint state
+                    self.trainer.optimizer.load_state_dict(checkpoint_data['optimizer'])
+
     def _finalize_mlflow(self, status='FINISHED'):
         if self._mlflow_finalized:
             return
@@ -312,6 +328,9 @@ class Experiment(object):
                             primary_iou_key: current_miou,
                         }
 
+                        if hasattr(self.trainer, 'scheduler') and self.trainer.scheduler is not None:
+                            checkpoint_data['scheduler'] = self.trainer.scheduler.state_dict()
+
                         if self.trainer.fp16_scaler is not None:
                             checkpoint_data['fp16_scaler'] = self.trainer.fp16_scaler.state_dict()
 
@@ -324,7 +343,7 @@ class Experiment(object):
                         if self.settings.mlflow_log_checkpoints:
                             self.mlflow_manager.log_artifact(saved_path, artifact_path='checkpoints')
                             if self.epoch_start > 0:
-                                self.mlflow_manager.log_artifact(saved_path_start, artifact_path='checkpoints')
+                                 self.mlflow_manager.log_artifact(saved_path_start, artifact_path='checkpoints')
 
             # Save checkpoint
             if self.recorder is not None:
@@ -335,6 +354,8 @@ class Experiment(object):
                         'optimizer': self.trainer.optimizer.state_dict(),
                         'epoch': epoch,
                     }
+                    if hasattr(self.trainer, 'scheduler') and self.trainer.scheduler is not None:
+                        checkpoint_data['scheduler'] = self.trainer.scheduler.state_dict()
                     if self.trainer.fp16_scaler is not None:
                         checkpoint_data['fp16_scaler'] = self.trainer.fp16_scaler.state_dict()
 

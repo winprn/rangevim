@@ -23,16 +23,15 @@ data:
   n_classes: 20 # 19 + 1(ignored)
   data_root: "../dataset/SemanticKitti/data_odometry_velodyne/dataset/sequences"
   has_label: true
-  use_trainval: true # train on train+val (seq 08 folded into training); val metrics are no longer held out
+  use_trainval: true # set to true if you want to train on train-val of SemanticKITTI.
 
 
 # Train config
 training:
-  val_frequency: 5 # seq 08 is in the train set here (use_trainval), so val mIoU is
-                   # not held out; run it periodically as a sanity signal only
+  val_frequency: 10
   n_epochs: 60
   warmup_epochs: 6
-  batch_size: 4 # per-GPU under DDP; 6 OOM'd on a 40GB A100, 3 measured ~21GB
+  batch_size: 3
   batch_size_val: 1
   lr: 0.0002 # linearly scaled for the effective batch (2 x 4 = 8)
   train_result_frequency: 100 # printing frequency of the train results

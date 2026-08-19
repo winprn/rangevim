@@ -56,6 +56,31 @@ class WarmupCosineLR(toptim._LRScheduler):
         else:
             return self.initial_scheduler.step(epoch)
 
+    def state_dict(self):
+        state = {
+            'lr': self.lr,
+            'min_lr': self.min_lr,
+            'warmup_steps': self.warmup_steps,
+            'momentum': self.momentum,
+            'max_steps': getattr(self, 'max_steps', None),
+            'finished': self.finished,
+            'initial_scheduler': self.initial_scheduler.state_dict(),
+            'cosine_scheduler': self.cosine_scheduler.state_dict(),
+        }
+        return state
+
+    def load_state_dict(self, state_dict):
+        self.finished = state_dict.get('finished', False)
+        if 'initial_scheduler' in state_dict:
+            self.initial_scheduler.load_state_dict(state_dict['initial_scheduler'])
+        if 'cosine_scheduler' in state_dict:
+            self.cosine_scheduler.load_state_dict(state_dict['cosine_scheduler'])
+
+    def fast_forward(self, steps):
+        """Fast-forward scheduler steps when resuming without saved scheduler state."""
+        for _ in range(steps):
+            self.step()
+
 
 class WarmupLR(toptim._LRScheduler):
     ''' Warmup learning rate scheduler.
@@ -101,3 +126,31 @@ class WarmupLR(toptim._LRScheduler):
             return super(WarmupLR, self).step(epoch)
         else:
             return self.initial_scheduler.step(epoch)
+
+    def state_dict(self):
+        state = {
+            'lr': self.lr,
+            'warmup_steps': self.warmup_steps,
+            'momentum': self.momentum,
+            'decay': self.decay,
+            'finished': self.finished,
+            'last_epoch': self.last_epoch,
+            'base_lrs': self.base_lrs,
+            'initial_scheduler': self.initial_scheduler.state_dict(),
+        }
+        return state
+
+    def load_state_dict(self, state_dict):
+        self.finished = state_dict.get('finished', False)
+        if 'initial_scheduler' in state_dict:
+            self.initial_scheduler.load_state_dict(state_dict['initial_scheduler'])
+        if 'base_lrs' in state_dict:
+            self.base_lrs = state_dict['base_lrs']
+        if 'last_epoch' in state_dict:
+            self.last_epoch = state_dict['last_epoch']
+
+    def fast_forward(self, steps):
+        """Fast-forward scheduler steps when resuming without saved scheduler state."""
+        for _ in range(steps):
+            self.step()
+
