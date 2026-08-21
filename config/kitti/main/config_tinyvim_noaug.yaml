@@ -32,8 +32,9 @@ training:
   n_epochs: 60
   warmup_epochs: 6
   batch_size: 3
+  grad_accum_steps: 2 # mimic batch size 6 (effective batch = batch_size * grad_accum_steps = 6 per GPU)
   batch_size_val: 1
-  lr: 0.0002 # linearly scaled for the effective batch (2 x 4 = 8)
+  lr: 0.0003 # scaled for effective batch size 6 per GPU (e.g. 2 GPUs x 6 = 12 total)
   train_result_frequency: 100 # printing frequency of the train results
   loss:
     focal_loss:
@@ -49,7 +50,7 @@ training:
       weight: 0.0
   # Optional manual class weights (length must equal n_classes). Leave null to use dataset-derived weights.
   # class_weights: [0.0, 1.0, ...]
-  save_epochs_at: [] # 1-based epochs to save checkpoints; must be < n_epochs. Leave empty to save every epoch.
+  save_epochs_at: [53, 55, 57] # 1-based epochs to save checkpoints; must be < n_epochs. Leave empty to save every epoch.
 
 # Model config
 model:

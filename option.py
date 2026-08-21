@@ -57,6 +57,7 @@ class Option(object):
         self.lr = train_cfg.get('lr', self.config.get('lr', None))
         self.min_lr = float(train_cfg.get('min_lr', self.config.get('min_lr', 0.0)))
         self.warmup_epochs = train_cfg.get('warmup_epochs', self.config.get('warmup_epochs', 10))
+        self.grad_accum_steps = int(train_cfg.get('grad_accum_steps', self.config.get('grad_accum_steps', 1)))
         loss_cfg = train_cfg.get('loss', self.config.get('loss', {}))
         focal_cfg = loss_cfg.get('focal_loss', {})
         boundary_cfg = loss_cfg.get('boundary_loss', {})
@@ -119,6 +120,8 @@ class Option(object):
             raise ValueError('lovasz_loss.weight must be >= 0.')
         if self.boundary_loss_weight < 0.0:
             raise ValueError('boundary_loss.weight must be >= 0.')
+        if self.grad_accum_steps < 1:
+            raise ValueError(f'training.grad_accum_steps must be >= 1, got {self.grad_accum_steps}')
         if self.aux_loss_weight < 0.0:
             raise ValueError('aux_loss.weight must be >= 0.')
         if self.focal_ignore_index < 0 or self.focal_ignore_index >= self.n_classes:

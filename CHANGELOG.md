@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-08-21
+
+- Implemented Gradient Accumulation (`grad_accum_steps`) across training pipelines (`run_epoch_rv` and `run_epoch_rv_kpconv`).
+  - Added `training.grad_accum_steps` to `option.py` and `--grad_accum_steps` CLI argument in `main.py`.
+  - Scaled backward loss by `1 / grad_accum_steps` and wrapped intermediate accumulation steps in `model.no_sync()` under DDP to avoid redundant inter-GPU gradient sync.
+  - Adjusted `WarmupCosineLR` scheduler step calculations (`warmup_steps` and `max_steps`) to track actual optimizer update frequency (`steps_per_epoch = ceil(len(train_loader) / grad_accum_steps)`).
+  - Updated `config/kitti/main/config_tinyvim_noaug.yaml` with `batch_size: 3`, `grad_accum_steps: 2`, and `lr: 0.0003` to mimic effective batch size 6 per GPU (12 across 2 GPUs) within ~21GB VRAM footprint.
+
+Files touched: `option.py`, `main.py`, `train.py`, `config/kitti/main/config_tinyvim_noaug.yaml`
+
 ## 2026-08-18
 
 - Reduced `training.batch_size` (6 -> 4) in

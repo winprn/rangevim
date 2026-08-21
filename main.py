@@ -424,6 +424,8 @@ if __name__ == '__main__':
     parser.add_argument('--save_eval_results', action='store_true', help='save the predictions')
     parser.add_argument('--log_frequency', type=int, default=100, help='logging frequency')
     parser.add_argument('--seed', type=int, default=1, help='random seed')
+    parser.add_argument('--grad_accum_steps', type=int, default=None,
+                        help='number of gradient accumulation steps (overrides config), type: int')
     parser.add_argument('--full', action='store_true', help='run full experiment: training followed by inference with best checkpoint')
     parser.add_argument(
         '--tta',
@@ -438,6 +440,10 @@ if __name__ == '__main__':
 
     settings.id = args.id if args.id is not None else settings.id
     settings.pretrained_model = args.pretrained_model if args.pretrained_model is not None else settings.pretrained_model
+    if args.grad_accum_steps is not None:
+        if args.grad_accum_steps < 1:
+            raise ValueError(f'--grad_accum_steps must be >= 1, got {args.grad_accum_steps}')
+        settings.grad_accum_steps = args.grad_accum_steps
 
     if settings.data_root is None:
         raise ValueError('data_root must be provided via config file or --data_root')

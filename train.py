@@ -18,6 +18,8 @@ import yaml
 import os
 import time
 import datetime
+import math
+import contextlib
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
@@ -94,13 +96,18 @@ class Trainer(object):
                 self.settings.robust_eval_seed)
 
         # Define scheduler
+        grad_accum_steps = max(1, getattr(self.settings, 'grad_accum_steps', 1))
+        steps_per_epoch = math.ceil(len(self.train_loader) / grad_accum_steps)
+        warmup_steps = self.settings.warmup_epochs * steps_per_epoch
+        max_steps = steps_per_epoch * (self.settings.n_epochs - self.settings.warmup_epochs)
+
         self.scheduler = utils.optim.WarmupCosineLR(
             optimizer=self.optimizer,
             lr=self.settings.lr,
             min_lr=getattr(self.settings, 'min_lr', 0.0),
-            warmup_steps=self.settings.warmup_epochs * len(self.train_loader),
+            warmup_steps=warmup_steps,
             momentum=0.9,
-            max_steps=len(self.train_loader) * (self.settings.n_epochs - self.settings.warmup_epochs))
+            max_steps=max_steps)
 
         # For mixed precision training
         self.fp16_scaler = None
@@ -462,6 +469,9 @@ class Trainer(object):
 
         log_frequency = max(1, self.settings.log_frequency)
 
+        if mode == 'Train':
+            self.optimizer.zero_grad()
+
         for i, batch in enumerate(dataloader):
             t_process_start = time.time()
             current_lr = None
@@ -498,6 +508,9 @@ class Trainer(object):
 
             # Forward propagation
             if mode == 'Train':
+                grad_accum_steps = max(1, getattr(self.settings, 'grad_accum_steps', 1))
+                is_accumulating = ((i + 1) % grad_accum_steps != 0) and ((i + 1) != len(dataloader))
+
                 with torch.cuda.amp.autocast(self.fp16_scaler is not None):
                     output = self.model(input_feature)
                     output, aux_outputs = self._split_main_and_aux_output(output)
@@ -510,17 +523,27 @@ class Trainer(object):
                         aux_loss_weight=self.settings.aux_loss_weight)
 
                 # Backward
-                self.optimizer.zero_grad()
-                if self.fp16_scaler is None:
-                    total_loss.backward()
-                    self.optimizer.step()
+                loss_scaled = total_loss / grad_accum_steps
+                if tools.is_dist_avail_and_initialized() and is_accumulating:
+                    sync_context = self.model.no_sync()
                 else:
-                    self.fp16_scaler.scale(total_loss).backward()
-                    self.fp16_scaler.step(self.optimizer)
-                    self.fp16_scaler.update()
+                    sync_context = contextlib.nullcontext()
 
-                # Update lr after backward (required by pytorch)
-                self.scheduler.step()
+                with sync_context:
+                    if self.fp16_scaler is None:
+                        loss_scaled.backward()
+                    else:
+                        self.fp16_scaler.scale(loss_scaled).backward()
+
+                if not is_accumulating:
+                    if self.fp16_scaler is None:
+                        self.optimizer.step()
+                    else:
+                        self.fp16_scaler.step(self.optimizer)
+                        self.fp16_scaler.update()
+                    self.optimizer.zero_grad()
+                    # Update lr after backward (required by pytorch)
+                    self.scheduler.step()
             with torch.no_grad():
                 if mode == 'Validation':
                     assert input_feature.shape[0] == 1 # validation batch size has to be 1
@@ -908,6 +931,9 @@ class Trainer(object):
 
         log_frequency = max(1, self.settings.log_frequency)
 
+        if mode == 'Train':
+            self.optimizer.zero_grad()
+
         for i, batch_dict in enumerate(dataloader):
             t_process_start = time.time()
             current_lr = None
@@ -935,6 +961,9 @@ class Trainer(object):
 
             # Forward propagation
             if mode == 'Train':
+                grad_accum_steps = max(1, getattr(self.settings, 'grad_accum_steps', 1))
+                is_accumulating = ((i + 1) % grad_accum_steps != 0) and ((i + 1) != len(dataloader))
+
                 with torch.cuda.amp.autocast(self.fp16_scaler is not None):
                     output3d = self.model(input_feature, px, py, pxyz, knns, num_points)
 
@@ -945,17 +974,27 @@ class Trainer(object):
                         output3d, output3d_softmax, labels3d, mask_3d)
 
                 # Backward
-                self.optimizer.zero_grad()
-                if self.fp16_scaler is None:
-                    total_loss.backward()
-                    self.optimizer.step()
+                loss_scaled = total_loss / grad_accum_steps
+                if tools.is_dist_avail_and_initialized() and is_accumulating:
+                    sync_context = self.model.no_sync()
                 else:
-                    self.fp16_scaler.scale(total_loss).backward()
-                    self.fp16_scaler.step(self.optimizer)
-                    self.fp16_scaler.update()
+                    sync_context = contextlib.nullcontext()
 
-                # Update lr after backward (required by pytorch)
-                self.scheduler.step()
+                with sync_context:
+                    if self.fp16_scaler is None:
+                        loss_scaled.backward()
+                    else:
+                        self.fp16_scaler.scale(loss_scaled).backward()
+
+                if not is_accumulating:
+                    if self.fp16_scaler is None:
+                        self.optimizer.step()
+                    else:
+                        self.fp16_scaler.step(self.optimizer)
+                        self.fp16_scaler.update()
+                    self.optimizer.zero_grad()
+                    # Update lr after backward (required by pytorch)
+                    self.scheduler.step()
             with torch.no_grad():
                 if mode == 'Validation':
                     assert input_feature.shape[0] == 1 # validation batch size has to be 1
